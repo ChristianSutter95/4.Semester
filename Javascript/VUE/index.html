@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src=" https://unpkg.com/vue@3/dist/vue.global.js "></script>
+    <title>Document</title>
+  </head>
+  <body>
+    <!-- das ist Ihre View -->
+    <div id="app">{{ message }}</div>
+    
+    <script>
+      const { createApp, reactive } = Vue;
+      // das ist ihr Model
+      var exampleData = reactive({
+        message: "Hello Vue!",
+      });
+      
+      // Hier wird eine Vue-Instance erzeugt. Das ist dann Ihr ViewModel
+      // welches die View und das Model verbindet.
+      var app = createApp({
+        data() {
+          return exampleData;
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

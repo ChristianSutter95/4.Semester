@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <!-- Variante 1-->
+    <div id="app">
+      <div v-bind:style="styleObject">Hello</div>
+    </div>
+
+    <!-- Variante 2-->
+    <div id="app">
+      <div :style="{color: activeColor, fontSize: fontSize + 'px'}">Hello</div>
+    </div>
+
+    
+
+    <script>
+      const { createApp, reactive } = Vue;
+      
+      var app = createApp({
+        data() {
+          return {
+            styleObject: {
+              color: "red",
+              fontSize: "13px",
+            },
+            activeColor: "red",
+            fontSize: 13,
+          };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

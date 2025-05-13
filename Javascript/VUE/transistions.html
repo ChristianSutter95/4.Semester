@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <style>
+      ul {
+        padding-left: 0;
+        font-family: Helvetica, Arial, sans-serif;
+      }
+
+      .list-move,
+      .list-enter-active,
+      .list-leave-active {
+        transition: all 1s ease-in-out;
+      }
+
+      .list-enter-from,
+      .list-leave-to {
+        max-height: 0px;
+        padding-top: 0px !important;
+        padding-bottom: 0px !important;
+        overflow: hidden;
+      }
+
+      .list-enter-to,
+      .list-leave-from {
+        max-height: 80px;
+      }
+    </style>
+
+    <div id="app">
+      <input v-model="query" />
+      <transition-group name="list" tag="ul">
+        <li v-for="item in filteredActors" :key="item.msg">{{item.msg}}</li>
+      </transition-group>
+    </div>
+    <script>
+      const { createApp, reactive } = Vue;
+      var app = createApp({
+        data() {
+          return {
+            query: "",
+            list: [
+              { msg: "Bruce Lee" },
+              { msg: "Jackie Chan" },
+              { msg: "Chuck Norris" },
+              { msg: "Jet Li" },
+              { msg: "Kung Fury" },
+            ],
+          };
+        },
+        computed: {
+          filteredActors() {
+            var self = this;
+            return self.list.filter(
+              (actor) => actor.msg.indexOf(self.query) !== -1
+            );
+          },
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

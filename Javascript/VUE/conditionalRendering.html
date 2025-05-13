@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <div id="app">
+      <div v-show="ok">
+        <h1>Title</h1>
+        <p>Paragraph 1</p>
+        <p>Paragraph 2</p>
+      </div>
+    </div>
+
+    <script>
+      const { createApp, reactive } = Vue;
+
+      var app = createApp({
+        data() {
+          return {
+            ok: false,
+          };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <ul id="app">
+      <li v-for="(item, index) in items">{{parentMessage}}: {{ item.message }}</li>
+    </ul>
+    <script>
+      const { createApp, reactive } = Vue;
+      var app = createApp({
+        data() {
+          return {
+            parentMessage: "Student",
+            items: [
+              { message: "John Smith" },
+              { message: "Jack Doe" },
+              { message: "Jane Miller" },
+            ],
+          };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

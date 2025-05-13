@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <div id="app">
+      <input type="text" v-model="firstName" />
+      <!-- Variante 1: Maus-Click und exakt Taste "Ctrl" -->
+      <input type="text" v-model="lastName" @click.ctrl.exact="toggleShow" />
+      <!-- Variante 2: Mittlerer Maus-Click und exakt Taste "Ctrl"   -->
+      <input
+        type="text"
+        v-model="lastName"
+        @click.middle.ctrl.exact="toggleShow"
+      />
+      <!-- Variante 3: page-down ist ein "automatic key modifier". -->
+      <input type="text" v-model="lastName" v-on:keyup.page-down="toggleShow" />
+      <template v-if="ok">
+        <p>{{ fullName }}</p>
+      </template>
+    </div>
+
+    <script>
+      const { createApp, reactive } = Vue;
+
+      var app = createApp({
+        data() {
+          return {
+            firstName: "John",
+            lastName: "Smith",
+            ok: true,
+          };
+        },
+        computed: {
+          fullName() {
+            return this.firstName + " " + this.lastName;
+          },
+        },
+        methods: {
+          toggleShow(event) {
+            this.ok = !this.ok;
+          },
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

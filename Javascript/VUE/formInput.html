@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <div id="app">
+      <input type="checkbox" id="jack" value="Jack" v-model="checkedNames" />
+      <label for="jack"> Jack </label>
+      <input type="checkbox" id="john" value="John" v-model="checkedNames" />
+      <label for="john"> John </label>
+      <input type="checkbox" id="jane" value="Jane" v-model="checkedNames" />
+      <label for="jane"> Jane </label>
+      <br />
+      <span> Checked names: {{ checkedNames }} </span>
+    </div>
+    <script>
+      const { createApp, reactive } = Vue;
+      var app = createApp({
+        data() {
+          return {
+            checkedNames: [],
+          };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>
