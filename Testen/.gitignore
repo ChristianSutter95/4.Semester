@@ -1,0 +1,56 @@
+# === Python allgemeine Ausschlüsse ===
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+*.tox
+
+# Bytecode- und Caches
+*.log
+*.pot
+*.pyc
+*.pkl
+*.db
+
+# Unit-Test-Cache und Coverage-Dateien
+.pytest_cache/
+.coverage
+htmlcov/
+nosetests.xml
+coverage.xml
+test-results/
+
+# Virtuelle Umgebungen
+venv/
+env/
+ENV/
+.venv/
+.ENV/
+
+# IPython/Jupyter Notebooks
+.ipynb_checkpoints/
+
+# pip cache
+pip-wheel-metadata/
+*.egg-info/
+dist/
+build/
+*.egg
+
+# mypy & pylint & andere Tools
+.mypy_cache/
+.dmypy.json
+.pyre/
+.pytype/
+
+# VS Code Ordner und Dateien
+.vscode/
+*.code-workspace
+
+# OS-spezifisch (Windows, macOS)
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
