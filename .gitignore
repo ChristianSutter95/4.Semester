@@ -1,0 +1,59 @@
+# === Allgemein ===
+# IDE- und Nutzer-spezifische Dateien
+.vs/
+*.componentinfo.xml
+*.aps
+*.suo
+*.user
+*.log
+*.bak
+*.tmp
+
+# VS Code Ordner und Dateien
+.vscode/
+*.code-workspace
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Bytecode- und Caches
+*.pot
+*.pyc
+*.pkl
+*.db
+
+# Build-Artefakte
+*.o
+*.obj
+*.elf
+*.hex
+*.map
+*.lst
+*.lss
+*.bin
+*.srec
+*.d
+
+# === Micrcontroller === Assembler und C === Microchip Studio ===
+# Templates
+Micrcontroller/*Project_Template/
+
+# Debug- & Release-Ordner
+**/Debug/
+**/Release/
+
+
+# === Testen === Python === Visual Studio Code ===
+# Unit-Test-Cache und Coverage-Dateien
+.pytest_cache/
+.coverage
+.tox
+htmlcov/
+nosetests.xml
+coverage.xml
+test-results/
+
+# === Javascript === Javascript === Visual Studio Code ===
+**/node_modules
