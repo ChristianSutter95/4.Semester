@@ -1,5 +1,5 @@
-from .Node import Node
-from .exceptions import ItemNotFoundError
+from Node import Node
+from exceptions import ItemNotFoundError
 
 class Tree:
     

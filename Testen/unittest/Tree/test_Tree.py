@@ -1,8 +1,8 @@
 import unittest
 
-from .Tree import Tree
-from .Node import Node
-from .exceptions import ItemNotFoundError
+from Tree import Tree
+from Node import Node
+from exceptions import ItemNotFoundError
 
 class TestTree(unittest.TestCase):
 
@@ -145,9 +145,10 @@ class TestTree(unittest.TestCase):
         values = [10, 5, 15]
         for v in values:
             self.tree.insert(Node(v))
-            self.tree.root = self.tree.remove(5, self.tree.getRoot())
-            self.assertIsNone(self.tree.getItem(5))
-            self.structureTreeCorrect(self.tree.getRoot())
+        
+        self.tree.root = self.tree.remove(5, self.tree.getRoot())
+        self.assertIsNone(self.tree.getItem(5))
+        self.structureTreeCorrect(self.tree.getRoot())
 
     # tests if a Node with one Child gets removed and if the Tree rebuild correct
     def test_remove_node_with_one_child(self):
@@ -186,3 +187,13 @@ class TestTree(unittest.TestCase):
             self.tree.root = self.tree.remove(99, self.tree.getRoot())
 
 
+    def test_remove_node_with_only_right_child(self):
+        self.tree.insert(Node(10))
+        self.tree.insert(Node(20))
+    
+        self.tree.root = self.tree.remove(10, self.tree.getRoot())
+    
+        self.assertEqual(self.tree.getRoot().val, 20)
+        self.assertIsNone(self.tree.getRoot().left)
+        self.assertIsNone(self.tree.getRoot().right)
+        self.structureTreeCorrect(self.tree.getRoot())
