@@ -38,7 +38,7 @@ __pycache__/
 
 # === Micrcontroller === Assembler und C === Microchip Studio ===
 # Templates
-Micrcontroller/*Project_Template/
+Microcontroller/*Project_Template/
 
 # Debug- & Release-Ordner
 **/Debug/
