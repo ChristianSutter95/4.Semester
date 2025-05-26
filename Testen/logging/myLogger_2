@@ -1,0 +1,29 @@
+import logging
+
+# Logger erstellen
+logger = logging.getLogger('MultiHandlerLogger')
+logger.setLevel(logging.DEBUG)  # Akzeptiere alle Level
+
+# Handler 1: Datei (alle Level)
+file_handler = logging.FileHandler('log_output.log', mode='w', encoding='utf-8')
+file_handler.setLevel(logging.DEBUG)  # schreibt ALLES in Datei
+
+# Handler 2: Konsole (nur ab WARNING)
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.WARNING)  # zeigt nur WARNING, ERROR, CRITICAL
+
+# Gemeinsames Format für beide Handler
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+file_handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
+
+# Handler dem Logger hinzufügen
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
+
+logger.debug('Dies ist eine Debug-Nachricht')
+logger.info('Dies ist eine Info-Nachricht')
+logger.warning('Dies ist eine Warnung')
+logger.error('Dies ist ein Fehler')
+logger.critical('Dies ist eine kritische Meldung')
