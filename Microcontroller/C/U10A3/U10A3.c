@@ -6,53 +6,60 @@
  * function "countChar" returns number of occurrences of a given character in a string
  */ 
 
+#include <stdio.h>          // für sprintf
+#include <string.h>         // für strstr
+#include <avr/io.h>         // für Registerzugriffe
+#include <avr/interrupt.h>  // für sei()
+#include "usb.h"            // eigene USB-Schnittstelle
 
-#include <stdio.h>
-#include <string.h>
-#include <avr/io.h>
-#include <avr/interrupt.h>
-#include "usb.h"
-
+// Zählt, wie oft Zeichen ch im String str vorkommt
 uint8_t countChar(uint8_t str[], uint8_t ch) {
 	uint8_t i = 0, count = 0;
-	while (str[i] != 0) {
-		if (str[i] == ch) count++;
+	while (str[i] != 0) {            // bis Nullzeichen
+		if (str[i] == ch) count++;   // Treffer zählen
 		i++;
 	}
 	return count;
 }
+
 int main(void) {
-	uint8_t prevIn = PIND, k = 0;
-	char str[32], outStr[32];
-	DDRB |= 0xf;
-	usbInit();	
-	sei();
+	uint8_t prevIn = PIND, k = 0;        // prevIn speichert vorherigen Schalterzustand, k = Eingabeindex
+	char str[32], outStr[32];            // Eingabepuffer, Ausgabe-String
+	DDRB |= 0xf;                         // PB0–PB3 als Ausgang (LEDs)
+	usbInit();                           // USB-System starten
+	sei();                               // Globale Interrupts aktivieren
 	
-    while(1) {
+	while(1) {
 		uint8_t ch;
+		
+		// Zeichen vom Host empfangen
 		if (usbGetAvailableReceive() > 0) {
-			ch = usbReadChar();
-			if (ch == '\r') {
-				str[k] = 0;
-				if (strstr(str, "led")) {
-					uint8_t pin = str[3] - '1';
-					if (strstr(str, "on")) PORTB |= 1 << pin;
-					if (strstr(str, "off")) PORTB &= ~(1 << pin);
+			ch = usbReadChar();         // nächstes Zeichen lesen
+			if (ch == '\r') {           // Befehl abgeschlossen?
+				str[k] = 0;             // String terminieren
+				if (strstr(str, "led")) {         // beginnt mit "led"?
+					uint8_t pin = str[3] - '1';    // z.?B. "led2" ? '2' - '1' = 1 (PB1)
+					if (strstr(str, "on"))         // enthält "on"?
+						PORTB |= 1 << pin;         // LED einschalten
+					if (strstr(str, "off"))        // enthält "off"?
+						PORTB &= ~(1 << pin);      // LED ausschalten
 				}
-				k = 0;
+				k = 0;                 // Eingabepuffer zurücksetzen
 			} else 
-				str[k++] = ch;
+				str[k++] = ch;        // Zeichen in Eingabepuffer ablegen
 		}
-		uint8_t in = (PIND & 0xf0) ^ prevIn;
+
+		// Schalterstatus prüfen (obere 4 Bit von Port D)
+		uint8_t in = (PIND & 0xf0) ^ prevIn;   // Änderung feststellen
 		if (in) {
 			uint8_t pin = 0; 
-			while (!(in & (1 << pin))) pin++;
+			while (!(in & (1 << pin))) pin++;   // betroffener Pin finden
 			if (PIND & (1 << pin))
- 				sprintf(outStr, "switch %d released\r\n", pin-3);
+				sprintf(outStr, "switch %d released\r\n", pin-3); // HIGH ? released
 			else
-  				sprintf(outStr, "switch %d pressed\r\n", pin-3);
-			usbWriteString((uint8_t*)outStr);
-			prevIn = PIND & 0xf0;
+				sprintf(outStr, "switch %d pressed\r\n", pin-3);  // LOW ? pressed
+			usbWriteString((uint8_t*)outStr);      // Meldung senden
+			prevIn = PIND & 0xf0;                  // neuen Zustand merken
 		}
 	}
 }

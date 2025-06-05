@@ -5,25 +5,35 @@
 
 .INCLUDE "m32U4def.inc"
 
-.EQU		maxCount=49998		// define upper limit for counter
+.EQU    maxCount = 49998        ; 49998 Schleifendurchläufe ? 25 ms bei 8 MHz
 
-.ORG		0					// set start address of code
-start:							// initialize
-	ldi		r16,1
-	out		DDRB,r16
+.ORG    0                       ; Startadresse im Flash
+
+start:
+    ldi     r16, 1              ; Bitmaske für PB0 (LED)
+    out     DDRB, r16           ; Setze PB0 als Ausgang ? DDRB = 0b00000001
 
 loop:
-	ldi		ZH,HIGH(maxCount)	// 1 cycle
-	ldi		ZL,LOW(maxCount)	// 1 cycle
+    ; --- Delay-Schleife ---
+    ldi     ZH, HIGH(maxCount)  ; Lade High-Byte des Zählers ? 1 Takt
+    ldi     ZL, LOW(maxCount)   ; Lade Low-Byte des Zählers ? 1 Takt
 
 count:
-	sbiw	ZH:ZL,1				// 2 cycles
-	brne	count				// 2 cycles, total 4 * 49997 + 3(last run) = 199991
-	in		r17,PINB			// 1 cycle		
-	eor		r17,r16				// 1 cycle
-	out		PORTB,r17			// 1 cycle
-	nop							// 1 cycle
-	nop							// 1 cycle
-	rjmp	loop				// 2 cycles
+    sbiw    ZH:ZL, 1            ; Subtrahiere 1 vom Registerpaar r31:r30 ? 2 Takte
+    brne    count               ; Wenn nicht 0 ? zurück zu count ? 2 Takte bei Sprung
 
-								// total 199991 + 9 = 200000 cycles at 8MHz -> 25ms
+    ; ? Delay = 49997 Durchläufe × 4 Takte + letzter Durchlauf (3 Takte) = **199991 Takte**
+
+    ; --- LED-Zustand toggeln ---
+    in      r17, PINB           ; Lade aktuellen Zustand von PORTB ? 1 Takt
+    eor     r17, r16            ; XOR mit Maske (PB0) ? toggelt Bit 0 ? 1 Takt
+    out     PORTB, r17          ; Schreibe zurück ? LED ein/aus ? 1 Takt
+
+    ; --- Kleine Pause zur Symmetrie / Timing-Feinabgleich ---
+    nop                         ; No Operation ? 1 Takt
+    nop                         ; No Operation ? 1 Takt
+
+    rjmp    loop                ; Zurück zum Anfang ? 2 Takte
+
+    ; ? Nach Delay-Schleife: 1 + 1 + 1 + 1 + 1 + 2 = **7 Takte**
+

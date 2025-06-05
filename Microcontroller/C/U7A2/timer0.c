@@ -38,3 +38,4 @@ unsigned char timer0getCount() {
 void timer0setCount(unsigned char count) {
 	TCNT0 = count;
 }
+

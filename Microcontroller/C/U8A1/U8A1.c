@@ -10,6 +10,7 @@
 #include "usb_common.h"
 
 int main(void) {
+	DDRD &= ~(1 << PD6);
 	usbCommonInit();
 	sei();
 	while(1);

@@ -38,7 +38,7 @@ uint8_t getEndpointNrFromIrq() {
 
 void handleEPControlIRQ() {			// endpoint 0, control 
 	if (is_USB_receive_setup()) {	// a setup packet was received
-		//usbProcessRequest();		// handle the request therein
+		usbProcessRequest();		// handle the request therein
 		USB_ack_receive_setup();
 	}
 }
@@ -54,15 +54,33 @@ void handleEP1IRQ() {				// endpoint 1, interrupt
 
 void handleEP2IRQ() {				// endpoint 2, bulk in
 	// send your data here with USB_write_byte();
+	static uint16_t counter = 0;
+	counter++;
+
+	if (counter >= 1000) {
+		uint8_t tastStatus = !(PIND & (1 << PD6));  // Taster an PD6 aktiv?
+
+		if (tastStatus) {
+			USB_write_byte('a');   // Taster gedrückt
+		} else {
+			USB_write_byte('b');   // Taster nicht gedrückt
+		}	
+		counter = 0;
+	}
+	
 	USB_send_control_in();
 	USB_ack_fifocon();
 }
 
 void handleEP3IRQ() {				// endpoint 3, bulk out
-	if(is_USB_receive_out()) {
-		USB_ack_control_out();
-		// receive your data here with USB_read_byte();
-		USB_ack_receive_out();
+	if (is_USB_receive_out()) {
+		uint8_t received = USB_read_byte();      // empfange ein Byte
+		if (received == 'x') {
+			PORTB |= (1 << PB1);                 // LED an
+		} else {
+			PORTB &= ~(1 << PB1);                // LED aus
+		}
+		USB_ack_receive_out();                   // Empfang bestätigen
 	}
 }
 
@@ -175,8 +193,8 @@ void handleUSBResumeIRQ() {
 	
 
 ISR (USB_GEN_vect) {		
-	if (is_USB_vbus_transition()); // handleVbusTransitionIRQ();
-	if (is_USB_reset()); //	handleResetIRQ();
+	if (is_USB_vbus_transition()); handleVbusTransitionIRQ();
+	if (is_USB_reset()); handleResetIRQ();
 	if (is_USB_id_transition()) handleIDTransitionIRQ();
 	if (is_USB_sof()) handleSOFIRQ();
 	if (is_USB_suspend()) handleSusplendIRQ();

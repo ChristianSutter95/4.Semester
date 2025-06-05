@@ -9,70 +9,94 @@
  * PB1 is set every 10ms, and reset when a match occurs 
  */ 
  
- .INCLUDE "m32U4def.inc"
+.INCLUDE "m32U4def.inc"
 
-.EQU	t0Start = 178		// 256-78
-.EQU	cntStart = 25
-.EQU	cntAddr = 0x100		// counter variable at start of ram
+.EQU    t0Start  = 178        ; Startwert für Timer (256 - 78)
+.EQU    cntStart = 25         ; Software-Zähler (25 × 10 ms = 250 ms)
+.EQU    cntAddr  = 0x100      ; Speicheradresse für Zähler im SRAM
 
+.ORG 0                        ; Reset-Vektor
+    rjmp start
 
-.ORG 0						// reset vector
-	rjmp	start
+.ORG OC0Aaddr                 ; Compare Match A Interrupt-Vektor
+    rjmp T0CMISR
 
-.ORG OC0Aaddr				// timer 0 compare match vector	
-	rjmp	T0CMISR
+.ORG OVF0addr                 ; Overflow Interrupt-Vektor von Timer0
+    rjmp T0ISR
 
-.ORG OVF0addr				// timer 0 overflow vector
-	rjmp	T0ISR
+.ORG 0x50                     ; Hauptprogrammstart
+start:
+    ; Stackpointer initialisieren
+    ldi r16, HIGH(RAMEND)
+    out SPH, r16
+    ldi r16, LOW(RAMEND)
+    out SPL, r16
 
-.ORG 0x50					// start of main program
-start:						// initialize	
-	ldi		r16,HIGH(RAMEND)// init stack pointer
-	out		SPH,r16
-	ldi		r16,LOW(RAMEND)
-	out		SPL,r16
-	ldi		r16,0x03		// make PB0, PB1 output
-	out		DDRB,r16
-	ldi		r16,5			// prescale by 1024
-	out		TCCR0B,r16		
-	ldi		r16,t0Start		// load timer0
-	out		TCNT0,r16	
-	ldi		r16,cntStart	// load counter
-	sts		cntAddr,r16
-	ldi		r16,t0Start+9	// load compare match register  
-	out		OCR0A,r16		
-	ldi		r16,3			// enable timer ints
-	sts		TIMSK0,r16		
-	sei						// enable ints globally
+    ; PB0 und PB1 als Ausgänge (LEDs)
+    ldi r16, 0x03
+    out DDRB, r16
+
+    ; Timer0 konfigurieren: Prescaler clk/1024
+    ldi r16, 5
+    out TCCR0B, r16
+
+    ; Timer0 vorladen für 10 ms-Überlauf
+    ldi r16, t0Start
+    out TCNT0, r16
+
+    ; Software-Zähler setzen (für PB0-Toggle)
+    ldi r16, cntStart
+    sts cntAddr, r16
+
+    ; Compare-Match bei t0Start + 9 = 187 ? ~1 ms nach Start
+    ldi r16, t0Start + 9
+    out OCR0A, r16
+
+    ; Enable Compare Match A + Overflow Interrupts
+    ldi r16, 3               ; Bit 0 (TOIE0), Bit 1 (OCIE0A)
+    sts TIMSK0, r16
+
+    sei                      ; Globale Interrupts aktivieren
+
 loop:
-	rjmp	loop
+    rjmp loop                ; Hauptprogramm bleibt in Endlosschleife
 
-// timer 0 overflow interrupt service routine
-T0ISR:						// once per 10ms
-	push	r16				// context save
-	push	r17
-	in		r16,SREG
-	push	r16
-	ldi		r16,t0Start		// reload timer0
-	out		TCNT0,r16
-	sbi		PORTB,1			// set PB1
-	lds		r16,cntAddr	
-	dec		r16
-	sts		cntAddr,r16
-	brne	restore			// end ISR if not yet 0
-	ldi		r16,cntStart	// load counter
-	sts		cntAddr,r16
-	ldi		r16,0x01		// toggle PB0
-	in		r17,PINB
-	eor		r17,r16
-	out		PORTB,r17
+; ===== Timer0 Overflow Interrupt (alle ~10 ms) =====
+T0ISR:
+    push r16
+    push r17
+    in   r16, SREG
+    push r16
+
+    ; Timer erneut starten (für exakten Zyklus)
+    ldi  r16, t0Start
+    out  TCNT0, r16
+
+    ; PB1 = HIGH (1 ms Puls beginnt hier)
+    sbi  PORTB, 1
+
+    ; Software-Zähler zählen (für 250 ms)
+    lds  r16, cntAddr
+    dec  r16
+    sts  cntAddr, r16
+    brne restore             ; Wenn Zähler ? 0 ? zurück
+
+    ; PB0 toggeln (Ende 250 ms)
+    ldi  r16, cntStart
+    sts  cntAddr, r16
+    ldi  r16, 0x01
+    in   r17, PINB
+    eor  r17, r16
+    out  PORTB, r17
+
 restore:
-	pop		r16				// context restore
-	out		SREG,r16
-	pop		r17
-	pop		r16
-	reti
+    pop  r16
+    out  SREG, r16
+    pop  r17
+    pop  r16
+    reti                     ; Rücksprung aus ISR
 
+; ===== Compare Match A Interrupt (ca. 1 ms nach Overflow) =====
 T0CMISR:
-	cbi		PORTB,1			// reset PB1
-	reti
+    cbi PORTB, 1             ; PB1 = LOW ? 1 ms Puls ist vorbei
+    reti

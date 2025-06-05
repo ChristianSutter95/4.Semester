@@ -6,60 +6,83 @@
  * counts from 178 to 256 -> 78 * 128us = 9.98ms
  */ 
  
- .INCLUDE "m32U4def.inc"
+.INCLUDE "m32U4def.inc"
 
-.EQU	t0Start = 178		// 256-78
-.EQU	cntStart = 25
-.EQU	cntAddr = 0x100		// counter variable at start of ram
+.EQU    t0Start = 178        ; Vorladewert ? 256 - 78 ? ergibt ~10 ms bei clk/1024
+.EQU    cntStart = 25        ; LED wird nach 25 Überläufen getoggelt ? 250 ms
+.EQU    cntAddr = 0x100      ; Speicheradresse für Software-Zähler im SRAM
 
+.ORG 0                       ; Reset-Vektor (Sprung zu Start)
+    rjmp start
 
-.ORG 0						// reset vector
-	rjmp	start
+.ORG OVF0addr                ; Timer0 Overflow Interrupt-Vektor (Adresse = 0x0020)
+    rjmp T0ISR               ; Sprung zur ISR
 
-.ORG OVF0addr				// timer 0 overflow vector
-	rjmp	T0ISR
+.ORG 0x50                    ; Hauptprogrammstart
+start:
+    ; Stackpointer initialisieren (RAMEND ? SP)
+    ldi r16, HIGH(RAMEND)
+    out SPH, r16
+    ldi r16, LOW(RAMEND)
+    out SPL, r16
 
-.ORG 0x50					// start of main program
-start:						// initialize	
-	ldi		r16,HIGH(RAMEND)// init stack pointer
-	out		SPH,r16
-	ldi		r16,LOW(RAMEND)
-	out		SPL,r16
-	ldi		r16,0x01		// make PB0 output
-	out		DDRB,r16
-	ldi		r16,5			// prescale by 1024
-	out		TCCR0B,r16		
-	ldi		r16,t0Start		// load timer0
-	out		TCNT0,r16	
-	ldi		r16,1
-	sts		TIMSK0,r16		// enable timer ints
-	ldi		r16,cntStart	// load counter
-	sts		cntAddr,r16
-	sei						// enable ints globally
+    ; PORTB.0 als Ausgang konfigurieren (LED)
+    ldi r16, 0x01
+    out DDRB, r16
+
+    ; Timer0 konfigurieren: clk/1024 ? Prescaler einstellen
+    ldi r16, 5               ; CS02:0 = 101 ? clk/1024
+    out TCCR0B, r16
+
+    ; Timer0 mit Vorladewert starten (178)
+    ldi r16, t0Start
+    out TCNT0, r16
+
+    ; Timer Overflow Interrupt aktivieren (TOIE0)
+    ldi r16, 1
+    sts TIMSK0, r16
+
+    ; Software-Zähler initialisieren (25 Interrupts = 250 ms)
+    ldi r16, cntStart
+    sts cntAddr, r16
+
+    ; Globale Interrupts aktivieren
+    sei
+
 loop:
-	rjmp	loop
+    rjmp loop                ; Endlosschleife – alles passiert in ISR
 
-// timer 0 overflow interrupt service routine
-T0ISR:						// once per 10ms
-	push	r16				// context save
-	push	r17
-	in		r16,SREG
-	push	r16
-	ldi		r16,t0Start		// reload timer0
-	out		TCNT0,r16
-	lds		r16,cntAddr	
-	dec		r16
-	sts		cntAddr,r16
-	brne	restore			// end ISR if not yet 0
-	ldi		r16,cntStart	// load counter
-	sts		cntAddr,r16
-	ldi		r16,0x01		// toggle PB0
-	in		r17,PINB
-	eor		r17,r16
-	out		PORTB,r17
+; ===== Interrupt Service Routine (alle 10 ms ausgelöst) =====
+T0ISR:
+    ; Kontext sichern (r16, r17, SREG)
+    push r16
+    push r17
+    in   r16, SREG
+    push r16
+
+    ; Timer erneut vorladen ? damit wieder in 78 Taktzyklen überläuft
+    ldi  r16, t0Start
+    out  TCNT0, r16
+
+    ; Software-Zähler laden, dekrementieren und zurückschreiben
+    lds  r16, cntAddr
+    dec  r16
+    sts  cntAddr, r16
+    brne restore             ; wenn ? 0 ? Ende der ISR
+
+    ; Wenn Zähler = 0 ? LED toggeln und Zähler neu laden
+    ldi  r16, cntStart
+    sts  cntAddr, r16
+    ldi  r16, 0x01
+    in   r17, PINB
+    eor  r17, r16
+    out  PORTB, r17
+
 restore:
-	pop		r16				// context restore
-	out		SREG,r16
-	pop		r17
-	pop		r16
-	reti
+    ; Kontext wiederherstellen (SREG, r17, r16)
+    pop  r16
+    out  SREG, r16
+    pop  r17
+    pop  r16
+    reti                     ; Rücksprung aus ISR
+

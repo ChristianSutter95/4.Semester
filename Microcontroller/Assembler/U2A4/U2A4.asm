@@ -3,19 +3,22 @@
  * Reads state of button on PD6 and outputs state on PB1
  */ 
 
-.INCLUDE "m32U4def.inc"
+.INCLUDE "m32U4def.inc"     ; Gerätespezifikationen
 
-.ORG		0			// set start address of code
-start:					// initialize
-	sbi		DDRB,1
-	cbi		DDRD,6
+.ORG    0                   ; Programmstart
 
-loop:	
-	in		r16,PIND
-	bst		r16,6
-	clr		r16
-	bld		r16,1
-	out		PORTB,r16
-	rjmp	loop
+start:
+    sbi     DDRB, 1         ; Setze PORTB.1 als Ausgang (LED)
+    cbi     DDRD, 6         ; Setze PORTD.6 als Eingang (Taster)
+
+loop:
+    in      r16, PIND       ; Lade PortD (Eingänge)
+    com     r16             ; Invertiere Tasterzustände (aktiv-LOW zu aktiv-HIGH)
+    bst     r16, 6          ; Kopiere Bit 6 ins T-Flag
+    clr     r16             ; Setze r16 auf 0
+    bld     r16, 1          ; Lade T-Flag in Bit 1 von r16
+    out     PORTB, r16      ; Setze LED entsprechend am PB1
+    rjmp    loop            ; Endlosschleife
+
 
 

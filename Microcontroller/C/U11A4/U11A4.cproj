@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectVersion>7.0</ProjectVersion>
     <ToolchainName>com.Atmel.AVRGCC8.C</ToolchainName>
-    <ProjectGuid>{fcf8bbf4-8354-4943-b21b-d43875213c35}</ProjectGuid>
+    <ProjectGuid>{b3249a2b-6f54-4070-be4b-c90d037c7d08}</ProjectGuid>
     <avrdevice>ATmega32U4</avrdevice>
     <avrdeviceseries>none</avrdeviceseries>
     <OutputType>Executable</OutputType>
@@ -12,9 +12,9 @@
     <OutputFileName>$(MSBuildProjectName)</OutputFileName>
     <OutputFileExtension>.elf</OutputFileExtension>
     <OutputDirectory>$(MSBuildProjectDirectory)\$(Configuration)</OutputDirectory>
-    <AssemblyName>U11A4</AssemblyName>
+    <AssemblyName>U9A4</AssemblyName>
     <Name>U11A4</Name>
-    <RootNamespace>U11A4</RootNamespace>
+    <RootNamespace>U9A4</RootNamespace>
     <ToolchainFlavour>Native</ToolchainFlavour>
     <KeepTimersRunning>true</KeepTimersRunning>
     <OverrideVtor>false</OverrideVtor>
@@ -140,7 +140,46 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="config.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="pll.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="typedefs.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="U11A4.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="usb.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="usb.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="usb_cdc_requests.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="usb_cdc_requests.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="usb_common.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="usb_common.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="usb_descriptors.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="usb_descriptors.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="usb_requests.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="usb_requests.h">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>

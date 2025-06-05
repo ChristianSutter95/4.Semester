@@ -6,58 +6,48 @@
 
 .INCLUDE "m32U4def.inc"
 
-.ORG		0				// set start address of code
-start:						// initialize	
-	// init stack pointer
-	ldi		r16,HIGH(RAMEND)
-	out		SPH,r16
-	ldi		r16,LOW(RAMEND)
-	out		SPL,r16
-	// init port
+.ORG		0				// Programmstartadresse im Flash
+
+start:						// Initialisierung	
+
+	// Stackpointer initialisieren (wichtig für call/ret/push/pop)
+	ldi		r16,HIGH(RAMEND)	// High-Byte von oberstem SRAM
+	out		SPH,r16				// in Stack Pointer High schreiben
+	ldi		r16,LOW(RAMEND)		// Low-Byte
+	out		SPL,r16				// in Stack Pointer Low schreiben
+
+	// Port B vollständig als Ausgang konfigurieren (für LED-Ausgabe)
 	ldi		r16,0xff
 	out		DDRB,r16
 
 loop:	
-	ldi		r20,250
+	ldi		r20,250			// Äußerer Schleifenzähler
 loop1:
-	ldi		r21,100
+	ldi		r21,100			// Innerer Schleifenzähler
 loop2:
-	call 	delay10Us		// 4 cycles
-	subi	r21,1
-	brne	loop2
-	subi	r20,1
-	brne	loop1
-	in		r17,PINB
-	eor		r17,r16
-	out		PORTB,r17
-	rjmp	loop
+	call 	delay10Us		// Subroutine aufrufen (4 Takte)
+	subi	r21,1			// inneren Zähler dekrementieren
+	brne	loop2			// zurück, solange ? 0
+	subi	r20,1			// äußeren Zähler dekrementieren
+	brne	loop1			// zurück, solange ? 0
 
+	// Wenn beide Schleifen fertig ? LED-Zustand toggeln
+	in		r17,PINB			// Aktuellen Zustand von PORTB lesen
+	eor		r17,r16				// Toggle: XOR mit Maske 0xFF
+	out		PORTB,r17			// Neuer Zustand auf PORTB schreiben
+	rjmp	loop				// Wiederholen
 
 // Subroutine Delay 10 µs
-// ======================
+// Ziel: Gesamtdauer (inkl. call und ret) = genau 80 Takte
 
-// Processor runs at 8 MHz, which is 125 ns cycle time.
-// A delay of 10 µs means therefore 8*10 = 80 cycles
-
-// Call to get here:												=  4 cycles
 delay10Us:                              
-       push   r16			// 2 cycles
-       ldi    r16,22		// 1 cycle								=  3 cycles
+       push   r16			// 2 Takte – r16 sichern
+       ldi    r16,22		// 1 Takt – Zähler laden
 count:
-       subi   r16,1			// 1 cycle
-       brne   count			// 2 cycles ==> 3 * 21 + 2(last run)    = 65 cycles
+       subi   r16,1			// 1 Takt
+       brne   count			// 2 Takte beim Sprung, 1 beim Beenden
 
-       pop    r16			// 2 cycles
-       nop					// 1 cycle
-       nop					// 1 cycle
-       ret					// 4 cycles								=  8 cycles
-							//										-----------
-							// Total cycles used					= 80 cycles
-							//										===========
-
-
-
-
-
-
-
+       pop    r16			// 2 Takte – r16 wiederherstellen
+       nop					// 1 Takt – Feinanpassung
+       nop					// 1 Takt – Feinanpassung
+       ret					// 4 Takte – Rücksprung zur Hauptschleife
